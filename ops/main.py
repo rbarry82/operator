@@ -354,7 +354,9 @@ def main(charm_class: typing.Type[ops.charm.CharmBase], use_juju_for_storage: bo
 
     if not yaml.__with_libyaml__:
         logger.debug('yaml does not have libyaml extensions, using slower pure Python yaml loader')
+    logger.info("===== (Re)initializing charm meta")
     meta = ops.charm.CharmMeta.from_yaml(metadata, actions_metadata)
+    logger.info("==== Got relations: {}".format(meta.relations))
     model = ops.model.Model(meta, model_backend)
 
     charm_state_path = charm_dir / CHARM_STATE_FILE
