@@ -29,6 +29,7 @@ from ops.charm import RelationMeta, RelationRole
 
 from ops._private import yaml
 
+from unittest.mock import patch
 from test.test_helpers import fake_script, fake_script_calls
 
 
@@ -989,6 +990,22 @@ containers:
         self.assertEqual(self.pebble.requests, [
             ('push', '/path/2', b'content2', None, True, 0o600, 12, 'bob', 34, 'staff'),
         ])
+
+    @patch('os.walk')
+    @patch('os.path.isdir')
+    def test_push_multi(self, mock_isdir, mock_walk):
+        mock_isdir.return_value = True
+        mock_walk.return_value = [('/content', [], ['1', '2'])]
+        self.container.push('/path', '/content')
+        self.assertEqual(self.pebble.requests[0],
+                         ('push', '/path', '/content/1', 'utf-8', True, None,
+                          None, None, None, None),
+                         )
+        self.assertEqual(self.pebble.requests[1],
+                         ('push', '/path', '/content/2', 'utf-8', True, None,
+                          None, None, None, None),
+                         )
+        self.pebble.requests = []
 
     def test_list_files(self):
         self.pebble.responses.append('dummy1')
